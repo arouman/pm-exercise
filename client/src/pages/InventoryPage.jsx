@@ -53,9 +53,9 @@ export default function InventoryPage() {
       minWidth: 240,
       valueGetter: (v, row) => row.material?.name || '—',
       renderCell: ({ row }) => (
-        <Box>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>{row.material?.name}</Typography>
-          <Typography variant="caption" color="text.secondary">{row.material?.sku}</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', lineHeight: 1.3 }}>
+          <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.3 }}>{row.material?.name}</Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.3 }}>{row.material?.sku}</Typography>
         </Box>
       ),
     },
@@ -74,11 +74,13 @@ export default function InventoryPage() {
       align: 'right',
       headerAlign: 'right',
       renderCell: ({ row }) => (
-        <Stack direction="row" alignItems="center" spacing={1} justifyContent="flex-end" sx={{ width: '100%' }}>
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+        <Stack direction="row" alignItems="baseline" spacing={0.75} justifyContent="flex-end" sx={{ width: '100%' }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
             {row.quantityOnHand.toLocaleString()}
           </Typography>
-          <Typography variant="caption" color="text.secondary">{row.material?.unit}</Typography>
+          <Box sx={{ minWidth: 32, textAlign: 'left' }}>
+            <Typography variant="caption" color="text.secondary">{row.material?.unit}</Typography>
+          </Box>
         </Stack>
       ),
     },
@@ -135,6 +137,7 @@ export default function InventoryPage() {
           columns={columns}
           loading={isLoading}
           autoHeight
+          rowHeight={64}
           disableRowSelectionOnClick
           onRowClick={(p) => setSelected({ materialId: p.row.materialId, projectId: p.row.projectId, item: p.row })}
           initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
