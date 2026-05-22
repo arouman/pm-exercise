@@ -1,0 +1,33 @@
+{
+  "name": "subbase-pm-exercise",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SubBase Senior PM take-home — starter environment (procurement, materials, projects, POs, deliveries, inventory).",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "postinstall": "npm install --prefix client && prisma generate && prisma migrate deploy && node prisma/seed.js",
+    "start": "concurrently -n api,web -c blue,green \"npm:start:api\" \"npm:start:web\"",
+    "start:api": "node --watch src/server.js",
+    "start:web": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "start:prod": "node src/server.js",
+    "db:reset": "prisma migrate reset --force && node prisma/seed.js",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "morgan": "^1.10.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "prettier": "^3.4.2",
+    "prisma": "^5.22.0"
+  }
+}

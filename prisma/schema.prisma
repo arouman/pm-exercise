@@ -1,0 +1,233 @@
+// SubBase PM Exercise — data model
+// Single source of truth for the existing SubBase domain (procurement, materials, projects,
+// POs, deliveries, inventory). Rental equipment models are intentionally NOT included —
+// designing those is the candidate's deliverable.
+//
+// NOTE: SQLite does not support Prisma `enum` types. Enum-like fields are declared as
+// String and validated at the application layer. Allowed values are listed in comments
+// and exposed via /api/docs (Swagger).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- People ----------
+
+model User {
+  id    String @id @default(cuid())
+  name  String
+  email String @unique
+  role  String // PROCUREMENT | SUPERINTENDENT | FLEET_MANAGER
+
+  projects              ProjectUser[]
+  purchaseOrders        PurchaseOrder[]        @relation("POCreatedBy")
+  deliveriesReceived    Delivery[]             @relation("DeliveryReceivedBy")
+  inventoryTransactions InventoryTransaction[]
+
+  createdAt DateTime @default(now())
+
+  @@index([role])
+}
+
+// ---------- Vendors & Materials ----------
+
+model Vendor {
+  id           String @id @default(cuid())
+  name         String
+  category     String // CONCRETE | REBAR | FASTENERS | LUMBER | ELECTRICAL | TOOLS_RENTAL_EXTERNAL
+  contactEmail String
+  contactPhone String
+  paymentTerms String // e.g. "Net 30"
+
+  materials      Material[]
+  purchaseOrders PurchaseOrder[]
+
+  createdAt DateTime @default(now())
+
+  @@index([category])
+}
+
+model Material {
+  id        String @id @default(cuid())
+  sku       String @unique
+  name      String
+  category  String // matches Vendor.category values
+  unit      String // EA | LF | CY | LB | BAG
+  unitPrice Float
+
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id])
+
+  poLines               PurchaseOrderLine[]
+  inventoryItems        InventoryItem[]
+  inventoryTransactions InventoryTransaction[]
+
+  createdAt DateTime @default(now())
+
+  @@index([vendorId])
+  @@index([category])
+}
+
+// ---------- Projects ----------
+
+model Project {
+  id               String    @id @default(cuid())
+  name             String
+  customer         String // free-text: "Turner Construction", "Baker Concrete", "Neon"
+  address          String
+  status           String // ACTIVE | COMPLETED | ON_HOLD
+  startDate        DateTime
+  projectedEndDate DateTime?
+
+  users                 ProjectUser[]
+  purchaseOrders        PurchaseOrder[]
+  inventoryItems        InventoryItem[]
+  inventoryTransactions InventoryTransaction[] @relation("TransactionProject")
+  transactionsFrom      InventoryTransaction[] @relation("TransactionFromProject")
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
+
+// Many-to-many join: which users are assigned to which projects.
+model ProjectUser {
+  projectId String
+  userId    String
+  project   Project @relation(fields: [projectId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@id([projectId, userId])
+  @@index([userId])
+}
+
+// ---------- Purchase Orders ----------
+
+model PurchaseOrder {
+  id               String    @id @default(cuid())
+  poNumber         String    @unique
+  status           String // DRAFT | SUBMITTED | PARTIALLY_RECEIVED | RECEIVED | CLOSED
+  total            Float
+  expectedDelivery DateTime?
+
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id])
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  createdById String
+  createdBy   User   @relation("POCreatedBy", fields: [createdById], references: [id])
+
+  lines      PurchaseOrderLine[]
+  deliveries Delivery[]
+
+  createdAt DateTime @default(now())
+
+  @@index([vendorId])
+  @@index([projectId])
+  @@index([status])
+}
+
+model PurchaseOrderLine {
+  id        String @id @default(cuid())
+  quantity  Float
+  unitPrice Float
+  lineTotal Float
+
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  materialId String
+  material   Material @relation(fields: [materialId], references: [id])
+
+  deliveryLines DeliveryLine[]
+
+  @@index([purchaseOrderId])
+  @@index([materialId])
+}
+
+// ---------- Deliveries ----------
+
+model Delivery {
+  id          String   @id @default(cuid())
+  deliveredAt DateTime
+  status      String // PENDING | PARTIAL | COMPLETE
+  notes       String?
+
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+
+  receivedById String
+  receivedBy   User   @relation("DeliveryReceivedBy", fields: [receivedById], references: [id])
+
+  lines DeliveryLine[]
+
+  createdAt DateTime @default(now())
+
+  @@index([purchaseOrderId])
+  @@index([status])
+}
+
+model DeliveryLine {
+  id               String @id @default(cuid())
+  quantityReceived Float
+
+  deliveryId String
+  delivery   Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+
+  purchaseOrderLineId String
+  purchaseOrderLine   PurchaseOrderLine @relation(fields: [purchaseOrderLineId], references: [id])
+
+  @@index([deliveryId])
+  @@index([purchaseOrderLineId])
+}
+
+// ---------- Inventory ----------
+
+// Current stock of a material at a project. Materialized for fast lookups; kept in sync
+// by the seed and (in real life) by mutations to InventoryTransaction.
+model InventoryItem {
+  id             String   @id @default(cuid())
+  quantityOnHand Float
+  lastUpdatedAt  DateTime @default(now())
+
+  materialId String
+  material   Material @relation(fields: [materialId], references: [id])
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  @@unique([materialId, projectId])
+  @@index([projectId])
+  @@index([materialId])
+}
+
+model InventoryTransaction {
+  id        String   @id @default(cuid())
+  type      String // IN | OUT | TRANSFER
+  quantity  Float
+  reference String? // free-text, e.g. "PO-1042 receipt" or "Daily consumption"
+  createdAt DateTime @default(now())
+
+  materialId String
+  material   Material @relation(fields: [materialId], references: [id])
+
+  projectId String
+  project   Project @relation("TransactionProject", fields: [projectId], references: [id])
+
+  fromProjectId String?
+  fromProject   Project? @relation("TransactionFromProject", fields: [fromProjectId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([projectId])
+  @@index([materialId])
+  @@index([createdAt])
+}
