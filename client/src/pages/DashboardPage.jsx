@@ -67,7 +67,7 @@ export default function DashboardPage() {
       />
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Grid item xs={12} sm={6} lg={3}>
           <KpiCard
             label="Active Projects"
             value={loading ? <Skeleton width={48} /> : kpis.activeProjects}
@@ -76,7 +76,7 @@ export default function DashboardPage() {
             icon={<ProjectsIcon fontSize="small" />}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Grid item xs={12} sm={6} lg={3}>
           <KpiCard
             label="Open Purchase Orders"
             value={loading ? <Skeleton width={48} /> : kpis.openPOs}
@@ -85,7 +85,7 @@ export default function DashboardPage() {
             icon={<POIcon fontSize="small" />}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Grid item xs={12} sm={6} lg={3}>
           <KpiCard
             label="Pending Deliveries"
             value={loading ? <Skeleton width={48} /> : kpis.pendingDeliveries}
@@ -94,7 +94,7 @@ export default function DashboardPage() {
             icon={<DeliveryIcon fontSize="small" />}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Grid item xs={12} sm={6} lg={3}>
           <KpiCard
             label="Low-Stock Items"
             value={loading ? <Skeleton width={48} /> : kpis.lowStock}
@@ -106,7 +106,7 @@ export default function DashboardPage() {
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 7 }}>
+        <Grid item xs={12} md={7}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h3" sx={{ mb: 0.5 }}>Recent Inventory Activity</Typography>
@@ -165,7 +165,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 5 }}>
+        <Grid item xs={12} md={5}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h3" sx={{ mb: 0.5 }}>POs by Status</Typography>

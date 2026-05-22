@@ -21,15 +21,35 @@ export default function KpiCard({ label, value, sub, icon, tone = 'neutral' }) {
   const t = tones[tone] || tones.neutral;
   return (
     <Card sx={{ height: '100%' }}>
-      <CardContent>
-        <Stack direction="row" alignItems="flex-start" justifyContent="space-between">
-          <Box>
-            <Typography variant="h6" color="text.secondary">{label}</Typography>
-            <Typography variant="h1" sx={{ mt: 0.5, lineHeight: 1.1 }}>
+      <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+        <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.secondary',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                display: 'block',
+              }}
+            >
+              {label}
+            </Typography>
+            <Typography
+              sx={{
+                mt: 1,
+                fontSize: { xs: '2rem', md: '2.5rem' },
+                fontWeight: 700,
+                lineHeight: 1.05,
+                letterSpacing: '-0.02em',
+                color: 'text.primary',
+              }}
+            >
               {value}
             </Typography>
             {sub && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1.25 }}>
                 {sub}
               </Typography>
             )}
@@ -37,9 +57,10 @@ export default function KpiCard({ label, value, sub, icon, tone = 'neutral' }) {
           {icon && (
             <Box
               sx={{
-                width: 40, height: 40,
+                width: 44, height: 44,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 bgcolor: t.bg, color: t.color, borderRadius: 2,
+                flexShrink: 0,
               }}
             >
               {icon}

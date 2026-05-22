@@ -44,7 +44,7 @@ export default function ProjectsPage() {
       ) : (
         <Grid container spacing={3}>
           {(isLoading ? Array.from({ length: 4 }) : data).map((p, i) => (
-            <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={p?.id || i}>
+            <Grid item xs={12} sm={6} lg={4} key={p?.id || i}>
               <Card sx={{ height: '100%' }}>
                 <CardActionArea
                   onClick={() => p && setSelectedId(p.id)}
