@@ -17,3 +17,11 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Local AI / tooling state
+.claude/
+.playwright/
+.playwright-cli/
+
+# Local debug screenshots
+*.png
