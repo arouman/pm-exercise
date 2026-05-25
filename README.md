@@ -8,7 +8,6 @@ Welcome. This repo is your starting point for the Senior PM (Enterprise Product)
 
 ### Take-Home Exercise — Senior Product Manager, Enterprise Product | SubBase
 
-**Issued:** [DATE] **Due:** [DATE + 5 days]
 
 ### Context
 
@@ -23,7 +22,7 @@ We already support basic inventory tracking with In/Out workflows for consumable
 These reflect real conditions at SubBase. Your recommendations should account for them:
 
 - **Small team.** Our product + eng org is under 15 people. Anything you propose needs to be buildable by a team of this size.
-- **Enterprise customers drive revenue.** Our largest customers (Turner, Baker, Neon) are concrete subcontractors with complex, multi-site operations. They have real procurement teams, field superintendents on job sites, and ERP systems that everything needs to flow into.
+- **Enterprise customers drive revenue.** Our largest customers (Turner, Baker, Nexgen) are concrete subcontractors with complex, multi-site operations. They have real procurement teams, field superintendents on job sites, and ERP systems that everything needs to flow into.
 - **Field users are the real test.** The people who would use a rental system day-to-day are not sitting at desks. They're field superintendents and equipment coordinators on active job sites — checking equipment in and out, dealing with breakdowns, and coordinating across multiple projects simultaneously. Many are on mobile devices in conditions where connectivity is unreliable.
 - **Existing product surface matters.** Rentals doesn't exist in a vacuum. It touches procurement (renting from external vendors), inventory (tracking owned vs. rented assets), project management (which job site has what equipment), and billing (rental periods, utilization rates, damage charges). How this connects to what we already have is as important as what it does standalone.
 
