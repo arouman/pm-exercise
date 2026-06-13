@@ -189,7 +189,7 @@ const purchaseOrders = [
   {
     id: 'po_1003', poNumber: 'PO-1003', status: 'SUBMITTED',
     expectedDelivery: D('2026-06-12'), createdAt: D('2026-05-15'),
-    rentalStart: D('2026-06-12'), expectedOffRent: D('2026-07-15'), actualOffRent: null,
+    rentalStart: D('2026-06-12'),
     vendorId: 'vnd_rental', projectId: 'prj_hudson', createdById: 'usr_proc_1',
     lines: [
       { id: 'pol_1003_1', materialId: 'mat_t_pump',     quantity: 3, unitPrice: 75.00 },
@@ -239,7 +239,7 @@ const purchaseOrders = [
   {
     id: 'po_1008', poNumber: 'PO-1008', status: 'CLOSED',
     expectedDelivery: D('2026-03-15'), createdAt: D('2026-02-28'),
-    rentalStart: D('2026-03-08'), expectedOffRent: D('2026-04-30'), actualOffRent: D('2026-04-28'),
+    rentalStart: D('2026-03-08'),
     vendorId: 'vnd_rental', projectId: 'prj_lax', createdById: 'usr_proc_2',
     lines: [
       { id: 'pol_1008_1', materialId: 'mat_t_compactor', quantity: 6, unitPrice: 95.00 },
@@ -307,9 +307,9 @@ const purchaseOrders = [
   {
     id: 'po_1015', poNumber: 'PO-1015', status: 'RECEIVED',
     expectedDelivery: D('2026-02-08'), createdAt: D('2026-01-22'),
-    // Deliberately OVERDUE: expectedOffRent is in the past, actualOffRent still null on
-    // 2026-06-13 — drives a non-zero off-rent $ waste number on the dashboard's first load.
-    rentalStart: D('2026-02-07'), expectedOffRent: D('2026-05-31'), actualOffRent: null,
+    // Rental still open. The OVERDUE state lives on the machine assignments (expectedEndDate
+    // 2026-05-31, actualEndDate null) — that's what drives the off-rent $ waste on first load.
+    rentalStart: D('2026-02-07'),
     vendorId: 'vnd_rental', projectId: 'prj_hudson', createdById: 'usr_proc_1',
     lines: [
       { id: 'pol_1015_1', materialId: 'mat_t_skidsteer', quantity: 2, unitPrice: 320.00 },
@@ -567,26 +567,26 @@ function computeInventory() {
 
 const equipment = [
   // --- Owned fleet (Baker) ---
-  { id: 'eqp_own_ss204', assetTag: 'BKR-SS-204', name: 'Bobcat S650 Skid Steer', category: 'SKID_STEER', ownership: 'OWNED', status: 'IN_USE', dailyRate: 280, make: 'Bobcat', model: 'S650', year: 2022, vendorId: null, purchaseOrderId: null, currentProjectId: 'prj_lax' },
-  { id: 'eqp_own_lift12', assetTag: 'BKR-LIFT-12', name: 'Genie GS-2632 Scissor Lift', category: 'LIFT', ownership: 'OWNED', status: 'IN_USE', dailyRate: 160, make: 'Genie', model: 'GS-2632', year: 2021, vendorId: null, purchaseOrderId: null, currentProjectId: 'prj_lax' },
-  { id: 'eqp_own_comp08', assetTag: 'BKR-COMP-08', name: 'Wacker Plate Compactor', category: 'COMPACTOR', ownership: 'OWNED', status: 'AVAILABLE', dailyRate: 85, make: 'Wacker Neuson', model: 'WP1550', year: 2020, vendorId: null, purchaseOrderId: null, currentProjectId: null },
-  { id: 'eqp_own_gen25', assetTag: 'BKR-GEN-25', name: '25 kW Towable Generator', category: 'GENERATOR', ownership: 'OWNED', status: 'IN_USE', dailyRate: 220, make: 'Generac', model: 'MLT-25', year: 2019, vendorId: null, purchaseOrderId: null, currentProjectId: 'prj_hudson' },
-  { id: 'eqp_own_trwl03', assetTag: 'BKR-TRWL-03', name: '36 in Power Trowel', category: 'TROWEL', ownership: 'OWNED', status: 'IDLE', dailyRate: 120, make: 'Allen', model: 'HD36', year: 2021, vendorId: null, purchaseOrderId: null, currentProjectId: 'prj_mission' },
-  { id: 'eqp_own_exc14', assetTag: 'BKR-EXC-14', name: 'CAT 305 Mini Excavator', category: 'EXCAVATOR', ownership: 'OWNED', status: 'DOWN', dailyRate: 480, make: 'Caterpillar', model: '305 CR', year: 2020, vendorId: null, purchaseOrderId: null, currentProjectId: 'prj_lax' },
-  { id: 'eqp_own_saw22', assetTag: 'BKR-SAW-22', name: 'Walk-Behind Concrete Saw', category: 'SAW', ownership: 'OWNED', status: 'AVAILABLE', dailyRate: 130, make: 'Husqvarna', model: 'FS 400', year: 2022, vendorId: null, purchaseOrderId: null, currentProjectId: null },
-  { id: 'eqp_own_pump09', assetTag: 'BKR-PUMP-09', name: '3 in Submersible Pump', category: 'PUMP', ownership: 'OWNED', status: 'IN_USE', dailyRate: 70, make: 'Multiquip', model: 'ST2037', year: 2021, vendorId: null, purchaseOrderId: null, currentProjectId: 'prj_mission' },
+  { id: 'eqp_own_ss204', assetTag: 'BKR-SS-204', name: 'Bobcat S650 Skid Steer', category: 'SKID_STEER', ownership: 'OWNED', status: 'IN_USE', dailyRate: 280, make: 'Bobcat', model: 'S650', year: 2022, vendorId: null, purchaseOrderId: null },
+  { id: 'eqp_own_lift12', assetTag: 'BKR-LIFT-12', name: 'Genie GS-2632 Scissor Lift', category: 'LIFT', ownership: 'OWNED', status: 'IN_USE', dailyRate: 160, make: 'Genie', model: 'GS-2632', year: 2021, vendorId: null, purchaseOrderId: null },
+  { id: 'eqp_own_comp08', assetTag: 'BKR-COMP-08', name: 'Wacker Plate Compactor', category: 'COMPACTOR', ownership: 'OWNED', status: 'AVAILABLE', dailyRate: 85, make: 'Wacker Neuson', model: 'WP1550', year: 2020, vendorId: null, purchaseOrderId: null },
+  { id: 'eqp_own_gen25', assetTag: 'BKR-GEN-25', name: '25 kW Towable Generator', category: 'GENERATOR', ownership: 'OWNED', status: 'IN_USE', dailyRate: 220, make: 'Generac', model: 'MLT-25', year: 2019, vendorId: null, purchaseOrderId: null },
+  { id: 'eqp_own_trwl03', assetTag: 'BKR-TRWL-03', name: '36 in Power Trowel', category: 'TROWEL', ownership: 'OWNED', status: 'IDLE', dailyRate: 120, make: 'Allen', model: 'HD36', year: 2021, vendorId: null, purchaseOrderId: null },
+  { id: 'eqp_own_exc14', assetTag: 'BKR-EXC-14', name: 'CAT 305 Mini Excavator', category: 'EXCAVATOR', ownership: 'OWNED', status: 'DOWN', dailyRate: 480, make: 'Caterpillar', model: '305 CR', year: 2020, vendorId: null, purchaseOrderId: null },
+  { id: 'eqp_own_saw22', assetTag: 'BKR-SAW-22', name: 'Walk-Behind Concrete Saw', category: 'SAW', ownership: 'OWNED', status: 'AVAILABLE', dailyRate: 130, make: 'Husqvarna', model: 'FS 400', year: 2022, vendorId: null, purchaseOrderId: null },
+  { id: 'eqp_own_pump09', assetTag: 'BKR-PUMP-09', name: '3 in Submersible Pump', category: 'PUMP', ownership: 'OWNED', status: 'IN_USE', dailyRate: 70, make: 'Multiquip', model: 'ST2037', year: 2021, vendorId: null, purchaseOrderId: null },
 
   // --- Rented-in (Western Equipment Rentals) ---
-  // po_1015 (Hudson) — the overdue rental. All three machines are still in the field past the
-  // PO's expectedOffRent (2026-05-31), so they drive the off-rent waste number.
-  { id: 'eqp_rent_ss1', assetTag: 'HY-SS-1', name: 'Skid-Steer Loader (rental)', category: 'SKID_STEER', ownership: 'RENTED', status: 'IN_USE', dailyRate: 320, make: 'Bobcat', model: 'S76', year: 2023, vendorId: 'vnd_rental', purchaseOrderId: 'po_1015', currentProjectId: 'prj_hudson' },
-  { id: 'eqp_rent_ss2', assetTag: 'HY-SS-2', name: 'Skid-Steer Loader (rental)', category: 'SKID_STEER', ownership: 'RENTED', status: 'IDLE', dailyRate: 320, make: 'Bobcat', model: 'S76', year: 2023, vendorId: 'vnd_rental', purchaseOrderId: 'po_1015', currentProjectId: 'prj_hudson' },
-  { id: 'eqp_rent_brk1', assetTag: 'HY-BRK-1', name: '65 lb Pneumatic Breaker (rental)', category: 'BREAKER', ownership: 'RENTED', status: 'IN_USE', dailyRate: 88, make: 'APT', model: 'TX65', year: 2022, vendorId: 'vnd_rental', purchaseOrderId: 'po_1015', currentProjectId: 'prj_hudson' },
+  // po_1015 (Hudson) — the overdue rental. All three machines are still in the field past their
+  // assignment expectedEndDate (2026-05-31), so they drive the off-rent waste number.
+  { id: 'eqp_rent_ss1', assetTag: 'HY-SS-1', name: 'Skid-Steer Loader (rental)', category: 'SKID_STEER', ownership: 'RENTED', status: 'IN_USE', dailyRate: 320, make: 'Bobcat', model: 'S76', year: 2023, vendorId: 'vnd_rental', purchaseOrderId: 'po_1015' },
+  { id: 'eqp_rent_ss2', assetTag: 'HY-SS-2', name: 'Skid-Steer Loader (rental)', category: 'SKID_STEER', ownership: 'RENTED', status: 'IDLE', dailyRate: 320, make: 'Bobcat', model: 'S76', year: 2023, vendorId: 'vnd_rental', purchaseOrderId: 'po_1015' },
+  { id: 'eqp_rent_brk1', assetTag: 'HY-BRK-1', name: '65 lb Pneumatic Breaker (rental)', category: 'BREAKER', ownership: 'RENTED', status: 'IN_USE', dailyRate: 88, make: 'APT', model: 'TX65', year: 2022, vendorId: 'vnd_rental', purchaseOrderId: 'po_1015' },
   // po_1003 (Hudson) — recent rental, still within term (not overdue).
-  { id: 'eqp_rent_pump1', assetTag: 'HY-PUMP-1', name: '3 in Submersible Pump (rental)', category: 'PUMP', ownership: 'RENTED', status: 'IN_USE', dailyRate: 75, make: 'Multiquip', model: 'ST2040', year: 2023, vendorId: 'vnd_rental', purchaseOrderId: 'po_1003', currentProjectId: 'prj_hudson' },
-  { id: 'eqp_rent_gen1', assetTag: 'HY-GEN-1', name: '25 kW Towable Generator (rental)', category: 'GENERATOR', ownership: 'RENTED', status: 'IN_USE', dailyRate: 245, make: 'Doosan', model: 'G25', year: 2023, vendorId: 'vnd_rental', purchaseOrderId: 'po_1003', currentProjectId: 'prj_hudson' },
+  { id: 'eqp_rent_pump1', assetTag: 'HY-PUMP-1', name: '3 in Submersible Pump (rental)', category: 'PUMP', ownership: 'RENTED', status: 'IN_USE', dailyRate: 75, make: 'Multiquip', model: 'ST2040', year: 2023, vendorId: 'vnd_rental', purchaseOrderId: 'po_1003' },
+  { id: 'eqp_rent_gen1', assetTag: 'HY-GEN-1', name: '25 kW Towable Generator (rental)', category: 'GENERATOR', ownership: 'RENTED', status: 'IN_USE', dailyRate: 245, make: 'Doosan', model: 'G25', year: 2023, vendorId: 'vnd_rental', purchaseOrderId: 'po_1003' },
   // po_1008 (LAX) — closed rental, already returned to the vendor.
-  { id: 'eqp_rent_comp1', assetTag: 'LAX-COMP-1', name: 'Plate Compactor (rental)', category: 'COMPACTOR', ownership: 'RENTED', status: 'RETURNED', dailyRate: 95, make: 'Wacker Neuson', model: 'WP1550', year: 2022, vendorId: 'vnd_rental', purchaseOrderId: 'po_1008', currentProjectId: 'prj_lax' },
+  { id: 'eqp_rent_comp1', assetTag: 'LAX-COMP-1', name: 'Plate Compactor (rental)', category: 'COMPACTOR', ownership: 'RENTED', status: 'RETURNED', dailyRate: 95, make: 'Wacker Neuson', model: 'WP1550', year: 2022, vendorId: 'vnd_rental', purchaseOrderId: 'po_1008' },
 ];
 
 // ---------- Rentals: Assignments ----------
@@ -627,24 +627,18 @@ const equipmentEvents = [
   { id: 'evt_trwl_in', equipmentId: 'eqp_own_trwl03', assignmentId: 'asg_trwl03', type: 'CHECK_IN', condition: 'DAMAGED', photoUrl: 'photos/BKR-TRWL-03-20260604-blade.jpg', notes: 'Returned with bent blade and oil leak. Photographed at handoff.', projectId: 'prj_mission', userId: 'usr_super_4', occurredAt: D('2026-06-04T16:30:00Z'), syncedAt: D('2026-06-04T19:45:00Z') },
   { id: 'evt_comp_out', equipmentId: 'eqp_rent_comp1', assignmentId: 'asg_comp1', type: 'CHECK_OUT', condition: 'GOOD', photoUrl: null, notes: null, projectId: 'prj_lax', userId: 'usr_super_3', occurredAt: D('2026-03-08T09:00:00Z'), syncedAt: D('2026-03-08T09:00:00Z') },
   { id: 'evt_comp_off', equipmentId: 'eqp_rent_comp1', assignmentId: 'asg_comp1', type: 'OFF_RENT', condition: 'GOOD', photoUrl: null, notes: 'Picked up by Western, two days early.', projectId: 'prj_lax', userId: 'usr_super_3', occurredAt: D('2026-04-28T14:00:00Z'), syncedAt: D('2026-04-28T14:00:00Z') },
-  // Breakdown reported from the field — offline gap, and backs the open MaintenanceRecord.
-  { id: 'evt_exc_down', equipmentId: 'eqp_own_exc14', assignmentId: 'asg_exc14', type: 'DOWN', condition: 'NEEDS_SERVICE', photoUrl: 'photos/BKR-EXC-14-20260610-hydraulic.jpg', notes: 'Hydraulic leak — boom will not lift. Tagged out of service.', projectId: 'prj_lax', userId: 'usr_super_3', occurredAt: D('2026-06-10T11:00:00Z'), syncedAt: D('2026-06-10T14:20:00Z') },
-];
-
-// ---------- Rentals: Maintenance ----------
-
-const maintenanceRecords = [
-  { id: 'mnt_exc14', equipmentId: 'eqp_own_exc14', status: 'DOWN', issue: 'Hydraulic leak — boom will not lift. Awaiting CAT field service.', reportedAt: D('2026-06-10T11:05:00Z'), resolvedAt: null, reportedById: 'usr_super_3' },
+  // Breakdown reported from the field — offline gap. The DOWN event + Equipment.status='DOWN'
+  // ARE the breakdown record (no separate MaintenanceRecord; maintenance is deferred to Phase 2).
+  { id: 'evt_exc_down', equipmentId: 'eqp_own_exc14', assignmentId: 'asg_exc14', type: 'DOWN', condition: 'NEEDS_SERVICE', photoUrl: 'photos/BKR-EXC-14-20260610-hydraulic.jpg', notes: 'Hydraulic leak — boom will not lift. Tagged out of service. Awaiting CAT field service.', projectId: 'prj_lax', userId: 'usr_super_3', occurredAt: D('2026-06-10T11:00:00Z'), syncedAt: D('2026-06-10T14:20:00Z') },
 ];
 
 // ---------- Run ----------
 
 async function main() {
   console.log('Resetting tables…');
-  // Delete in FK-safe order. Rentals first: events + maintenance reference assignments/equipment,
-  // assignments reference equipment, and equipment references PO/vendor/project (deleted below).
+  // Delete in FK-safe order. Rentals first: events reference assignments/equipment, assignments
+  // reference equipment, and equipment references PO/vendor (deleted below).
   await prisma.equipmentEvent.deleteMany();
-  await prisma.maintenanceRecord.deleteMany();
   await prisma.equipmentAssignment.deleteMany();
   await prisma.equipment.deleteMany();
   await prisma.inventoryTransaction.deleteMany();
@@ -704,9 +698,6 @@ async function main() {
   console.log('Inserting equipment events…');
   await prisma.equipmentEvent.createMany({ data: equipmentEvents });
 
-  console.log('Inserting maintenance records…');
-  await prisma.maintenanceRecord.createMany({ data: maintenanceRecords });
-
   console.log('Seed complete.');
   console.log(
     `  users=${users.length} vendors=${vendors.length} materials=${materials.length}`,
@@ -717,7 +708,7 @@ async function main() {
   console.log(`  inventoryItems=${items.length} transactions=${txns.length}`);
   console.log(
     `  equipment=${equipment.length} assignments=${equipmentAssignments.length}` +
-      ` events=${equipmentEvents.length} maintenance=${maintenanceRecords.length}`,
+      ` events=${equipmentEvents.length}`,
   );
 }
 

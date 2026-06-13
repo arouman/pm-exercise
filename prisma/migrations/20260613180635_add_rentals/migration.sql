@@ -1,6 +1,4 @@
 -- AlterTable
-ALTER TABLE "PurchaseOrder" ADD COLUMN "actualOffRent" DATETIME;
-ALTER TABLE "PurchaseOrder" ADD COLUMN "expectedOffRent" DATETIME;
 ALTER TABLE "PurchaseOrder" ADD COLUMN "rentalStart" DATETIME;
 
 -- CreateTable
@@ -17,11 +15,9 @@ CREATE TABLE "Equipment" (
     "year" INTEGER,
     "vendorId" TEXT,
     "purchaseOrderId" TEXT,
-    "currentProjectId" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Equipment_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Equipment_purchaseOrderId_fkey" FOREIGN KEY ("purchaseOrderId") REFERENCES "PurchaseOrder" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Equipment_currentProjectId_fkey" FOREIGN KEY ("currentProjectId") REFERENCES "Project" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "Equipment_purchaseOrderId_fkey" FOREIGN KEY ("purchaseOrderId") REFERENCES "PurchaseOrder" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -62,20 +58,6 @@ CREATE TABLE "EquipmentEvent" (
     CONSTRAINT "EquipmentEvent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- CreateTable
-CREATE TABLE "MaintenanceRecord" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "status" TEXT NOT NULL,
-    "issue" TEXT NOT NULL,
-    "reportedAt" DATETIME NOT NULL,
-    "resolvedAt" DATETIME,
-    "equipmentId" TEXT NOT NULL,
-    "reportedById" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "MaintenanceRecord_equipmentId_fkey" FOREIGN KEY ("equipmentId") REFERENCES "Equipment" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "MaintenanceRecord_reportedById_fkey" FOREIGN KEY ("reportedById") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "Equipment_assetTag_key" ON "Equipment"("assetTag");
 
@@ -84,9 +66,6 @@ CREATE INDEX "Equipment_status_idx" ON "Equipment"("status");
 
 -- CreateIndex
 CREATE INDEX "Equipment_ownership_idx" ON "Equipment"("ownership");
-
--- CreateIndex
-CREATE INDEX "Equipment_currentProjectId_idx" ON "Equipment"("currentProjectId");
 
 -- CreateIndex
 CREATE INDEX "EquipmentAssignment_equipmentId_idx" ON "EquipmentAssignment"("equipmentId");
@@ -105,9 +84,3 @@ CREATE INDEX "EquipmentEvent_type_idx" ON "EquipmentEvent"("type");
 
 -- CreateIndex
 CREATE INDEX "EquipmentEvent_occurredAt_idx" ON "EquipmentEvent"("occurredAt");
-
--- CreateIndex
-CREATE INDEX "MaintenanceRecord_equipmentId_idx" ON "MaintenanceRecord"("equipmentId");
-
--- CreateIndex
-CREATE INDEX "MaintenanceRecord_status_idx" ON "MaintenanceRecord"("status");

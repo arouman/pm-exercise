@@ -30,7 +30,6 @@ model User {
   inventoryTransactions InventoryTransaction[]
   equipmentEvents       EquipmentEvent[]
   equipmentAssignments  EquipmentAssignment[]  @relation("AssignmentCreatedBy")
-  maintenanceReports    MaintenanceRecord[]    @relation("MaintenanceReportedBy")
 
   createdAt DateTime @default(now())
 
@@ -93,7 +92,6 @@ model Project {
   inventoryItems        InventoryItem[]
   inventoryTransactions InventoryTransaction[] @relation("TransactionProject")
   transactionsFrom      InventoryTransaction[] @relation("TransactionFromProject")
-  equipment             Equipment[]
   equipmentAssignments  EquipmentAssignment[]
   equipmentEvents       EquipmentEvent[]
 
@@ -122,13 +120,11 @@ model PurchaseOrder {
   total            Float
   expectedDelivery DateTime?
 
-  // Rental lifecycle (only set on rent-in POs). The starter PO has a delivery date but no
-  // return event — these three fields close that gap so the product can show dollars wasted
-  // (machine still on-rent past expectedOffRent), not just days elapsed. "Overdue" is derived
-  // (rented + still in field + expectedOffRent < today + actualOffRent null), never stored.
-  rentalStart     DateTime?
-  expectedOffRent DateTime?
-  actualOffRent   DateTime?
+  // Rental contract start (only set on rent-in POs). Per-machine return tracking lives on
+  // EquipmentAssignment (expectedEndDate / actualEndDate) — the canonical grain, since one rental
+  // PO can carry several machines returned independently. "Overdue" is derived per machine from the
+  // assignment (rented + still in field + expectedEndDate < today + actualEndDate null), never stored.
+  rentalStart DateTime?
 
   vendorId String
   vendor   Vendor @relation(fields: [vendorId], references: [id])
@@ -276,19 +272,16 @@ model Equipment {
   purchaseOrderId String?
   purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
 
-  // Where the machine physically is right now (null = in the yard / unassigned).
-  currentProjectId String?
-  currentProject   Project? @relation(fields: [currentProjectId], references: [id])
+  // Current project / location is NOT stored — it's derived from the machine's ACTIVE assignment
+  // (none → in the yard). Avoids a denormalized field drifting out of sync with assignments.
 
-  assignments  EquipmentAssignment[]
-  events       EquipmentEvent[]
-  maintenance  MaintenanceRecord[]
+  assignments EquipmentAssignment[]
+  events      EquipmentEvent[]
 
   createdAt DateTime @default(now())
 
   @@index([status])
   @@index([ownership])
-  @@index([currentProjectId])
 }
 
 // A machine committed to a project for a date range. Drives scheduling/conflict warnings,
@@ -350,25 +343,4 @@ model EquipmentEvent {
   @@index([equipmentId])
   @@index([type])
   @@index([occurredAt])
-}
-
-// Thin maintenance log — backs the DOWN status and the superintendent "breakdown" pain.
-// Intentionally NOT a full maintenance system (deferred to Phase 2 per the strategy brief).
-model MaintenanceRecord {
-  id         String    @id @default(cuid())
-  status     String // DOWN | REPAIRING | RESOLVED
-  issue      String
-  reportedAt DateTime
-  resolvedAt DateTime?
-
-  equipmentId String
-  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
-
-  reportedById String
-  reportedBy   User   @relation("MaintenanceReportedBy", fields: [reportedById], references: [id])
-
-  createdAt DateTime @default(now())
-
-  @@index([equipmentId])
-  @@index([status])
 }
