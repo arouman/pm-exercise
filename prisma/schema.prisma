@@ -28,6 +28,9 @@ model User {
   purchaseOrders        PurchaseOrder[]        @relation("POCreatedBy")
   deliveriesReceived    Delivery[]             @relation("DeliveryReceivedBy")
   inventoryTransactions InventoryTransaction[]
+  equipmentEvents       EquipmentEvent[]
+  equipmentAssignments  EquipmentAssignment[]  @relation("AssignmentCreatedBy")
+  maintenanceReports    MaintenanceRecord[]    @relation("MaintenanceReportedBy")
 
   createdAt DateTime @default(now())
 
@@ -46,6 +49,7 @@ model Vendor {
 
   materials      Material[]
   purchaseOrders PurchaseOrder[]
+  equipment      Equipment[]
 
   createdAt DateTime @default(now())
 
@@ -89,6 +93,9 @@ model Project {
   inventoryItems        InventoryItem[]
   inventoryTransactions InventoryTransaction[] @relation("TransactionProject")
   transactionsFrom      InventoryTransaction[] @relation("TransactionFromProject")
+  equipment             Equipment[]
+  equipmentAssignments  EquipmentAssignment[]
+  equipmentEvents       EquipmentEvent[]
 
   createdAt DateTime @default(now())
 
@@ -115,6 +122,14 @@ model PurchaseOrder {
   total            Float
   expectedDelivery DateTime?
 
+  // Rental lifecycle (only set on rent-in POs). The starter PO has a delivery date but no
+  // return event — these three fields close that gap so the product can show dollars wasted
+  // (machine still on-rent past expectedOffRent), not just days elapsed. "Overdue" is derived
+  // (rented + still in field + expectedOffRent < today + actualOffRent null), never stored.
+  rentalStart     DateTime?
+  expectedOffRent DateTime?
+  actualOffRent   DateTime?
+
   vendorId String
   vendor   Vendor @relation(fields: [vendorId], references: [id])
 
@@ -126,6 +141,7 @@ model PurchaseOrder {
 
   lines      PurchaseOrderLine[]
   deliveries Delivery[]
+  equipment  Equipment[]
 
   createdAt DateTime @default(now())
 
@@ -230,4 +246,129 @@ model InventoryTransaction {
   @@index([projectId])
   @@index([materialId])
   @@index([createdAt])
+}
+
+// ---------- Rentals (the candidate's deliverable) ----------
+//
+// The "rent-in wedge": SubBase already holds the rental POs, so it can track each physical
+// machine through its rental lifecycle, allocate its cost to the job, and surface off-rent
+// waste. Owned fleet (OWNED) and rented-in machines (RENTED) live in one table so the field
+// and back-office views show a single combined list. Per repo convention, every enum-like
+// field is a String validated in the route layer (no SQLite enums).
+
+// A serial-numbered physical asset — owned fleet or a rented-in machine tied to a rental PO.
+model Equipment {
+  id       String @id @default(cuid())
+  assetTag String @unique // mono-rendered, e.g. "BKR-SS-204"
+  name     String
+  category String // SKID_STEER | LIFT | COMPACTOR | GENERATOR | PUMP | SAW | TROWEL | BREAKER | EXCAVATOR | OTHER
+  ownership String // OWNED | RENTED
+  status   String // AVAILABLE | IN_USE | IDLE | DOWN | RETURNED
+  dailyRate Float // owned: internal charge-out rate; rented: vendor day rate
+  make     String?
+  model    String?
+  year     Int?
+
+  // Set for RENTED machines: which vendor and which rent-in PO they came in on.
+  vendorId String?
+  vendor   Vendor? @relation(fields: [vendorId], references: [id])
+
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+
+  // Where the machine physically is right now (null = in the yard / unassigned).
+  currentProjectId String?
+  currentProject   Project? @relation(fields: [currentProjectId], references: [id])
+
+  assignments  EquipmentAssignment[]
+  events       EquipmentEvent[]
+  maintenance  MaintenanceRecord[]
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([ownership])
+  @@index([currentProjectId])
+}
+
+// A machine committed to a project for a date range. Drives scheduling/conflict warnings,
+// cost-to-job allocation (dailyRate snapshot x days on site), and utilization.
+model EquipmentAssignment {
+  id              String    @id @default(cuid())
+  startDate       DateTime
+  expectedEndDate DateTime
+  actualEndDate   DateTime?
+  status          String // SCHEDULED | ACTIVE | RETURNED
+  dailyRate       Float // snapshot at assignment time, so cost-to-job is stable
+  notes           String?
+
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  createdById String
+  createdBy   User   @relation("AssignmentCreatedBy", fields: [createdById], references: [id])
+
+  events EquipmentEvent[]
+
+  createdAt DateTime @default(now())
+
+  @@index([equipmentId])
+  @@index([projectId])
+  @@index([status])
+}
+
+// A field/lifecycle event on a machine: check-out, check-in, off-rent, breakdown, transfer.
+// occurredAt = when it happened in the field; syncedAt = when it reached the server. The gap
+// between them powers the offline story (events captured offline, replayed on reconnect).
+model EquipmentEvent {
+  id        String  @id @default(cuid())
+  type      String // CHECK_OUT | CHECK_IN | OFF_RENT | DOWN | TRANSFER
+  condition String? // GOOD | DAMAGED | NEEDS_SERVICE
+  photoUrl  String? // mocked filename / object-URL ref — no real upload (out of scope)
+  notes     String?
+
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  assignmentId String?
+  assignment   EquipmentAssignment? @relation(fields: [assignmentId], references: [id])
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  occurredAt DateTime
+  syncedAt   DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([equipmentId])
+  @@index([type])
+  @@index([occurredAt])
+}
+
+// Thin maintenance log — backs the DOWN status and the superintendent "breakdown" pain.
+// Intentionally NOT a full maintenance system (deferred to Phase 2 per the strategy brief).
+model MaintenanceRecord {
+  id         String    @id @default(cuid())
+  status     String // DOWN | REPAIRING | RESOLVED
+  issue      String
+  reportedAt DateTime
+  resolvedAt DateTime?
+
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  reportedById String
+  reportedBy   User   @relation("MaintenanceReportedBy", fields: [reportedById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([equipmentId])
+  @@index([status])
 }
