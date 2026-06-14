@@ -163,7 +163,7 @@ export default function EquipmentPage() {
     <>
       <PageHeader
         title="Equipment"
-        subtitle="Owned fleet and rented-in machines in one list. Click a machine for its assignment history and field timeline."
+        info="Combined view of owned and rented-in equipment. Select a machine to view its specifications, assignment history, and field event timeline."
       />
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>

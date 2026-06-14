@@ -19,6 +19,7 @@ import SpendIcon from '@mui/icons-material/PaymentsOutlined';
 import PageHeader from '../components/PageHeader';
 import KpiCard from '../components/KpiCard';
 import StatusChip from '../components/StatusChip';
+import InfoHint from '../components/InfoHint';
 import { useEntities } from '../hooks/useEntities';
 import { fmtUSD, daysBetween } from '../rentals/format';
 
@@ -65,7 +66,7 @@ export default function RentalsDashboardPage() {
     <>
       <PageHeader
         title="Rentals"
-        subtitle="The rent-in wedge: what's on rent, what's bleeding money past its off-rent date, and how hard the fleet is working."
+        info="Overview of rented-in equipment: current on-rent count, off-rent cost exposure, fleet utilization, and rental cost allocated to projects."
       />
 
       {/* KPI row — off-rent waste is the money shot */}
@@ -119,17 +120,16 @@ export default function RentalsDashboardPage() {
                 alignItems="baseline"
                 sx={{ mb: 0.5 }}
               >
-                <Typography variant="h3">Off-Rent Alerts</Typography>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <Typography variant="h3">Off-Rent Alerts</Typography>
+                  <InfoHint text="Rented machines still in the field past their expected off-rent date. Estimated waste is days overdue multiplied by the daily rate." />
+                </Stack>
                 {!loading && offRent.data?.length > 0 && (
                   <Typography variant="body2" sx={{ fontWeight: 700, color: 'error.main' }}>
-                    {fmtUSD(totalWaste)} and counting
+                    {fmtUSD(totalWaste)} to date
                   </Typography>
                 )}
               </Stack>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Rented machines sitting idle or unused past their expected off-rent date. Every day
-                costs the daily rate.
-              </Typography>
               <Divider sx={{ mb: 1 }} />
               {loading ? (
                 <Stack spacing={1}>
@@ -137,13 +137,13 @@ export default function RentalsDashboardPage() {
                     <Skeleton key={i} height={56} />
                   ))}
                 </Stack>
-              ) : offRent.data?.length === 0 ? (
+              ) : !offRent.data?.length ? (
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{ py: 4, textAlign: 'center' }}
                 >
-                  No machines are overdue. Nothing bleeding right now.
+                  No machines are currently past their off-rent date.
                 </Typography>
               ) : (
                 <Stack divider={<Divider flexItem />} spacing={0}>
@@ -203,11 +203,13 @@ export default function RentalsDashboardPage() {
           <Stack spacing={3} sx={{ height: '100%' }}>
             <Card sx={{ flex: 1 }}>
               <CardContent sx={{ p: 3 }}>
-                <Typography variant="h3" sx={{ mb: 0.5 }}>
-                  Utilization by Machine
-                </Typography>
+                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.5 }}>
+                  <Typography variant="h3">Utilization by Machine</Typography>
+                  <InfoHint text="Share of available days each machine has been deployed since it joined the fleet (days deployed ÷ days available). Lower values indicate idle assets." />
+                </Stack>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Idle iron is the cheapest to give back. {fleet?.downCount ?? 0} down for service.
+                  {fleet?.downCount ?? 0} machine{(fleet?.downCount ?? 0) === 1 ? '' : 's'}{' '}
+                  currently down for service.
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 {loading ? (
@@ -264,13 +266,10 @@ export default function RentalsDashboardPage() {
 
             <Card sx={{ flex: 1 }}>
               <CardContent sx={{ p: 3 }}>
-                <Typography variant="h3" sx={{ mb: 0.5 }}>
-                  Rental Cost to Job
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Rental $ allocated per project (daily rate × days on site) — clean billing data
-                  for the ERP.
-                </Typography>
+                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 2 }}>
+                  <Typography variant="h3">Rental Cost to Job</Typography>
+                  <InfoHint text="Rental cost allocated to each project, calculated as daily rate multiplied by days on site. Intended as billing data for the ERP." />
+                </Stack>
                 <Divider sx={{ mb: 2 }} />
                 {loading ? (
                   <Stack spacing={2}>
