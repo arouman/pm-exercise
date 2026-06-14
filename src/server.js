@@ -15,6 +15,9 @@ import projectsRouter from './routes/projects.js';
 import purchaseOrdersRouter from './routes/purchase-orders.js';
 import deliveriesRouter from './routes/deliveries.js';
 import inventoryRouter from './routes/inventory.js';
+import equipmentRouter from './routes/equipment.js';
+import equipmentAssignmentsRouter from './routes/equipment-assignments.js';
+import equipmentEventsRouter from './routes/equipment-events.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -33,6 +36,9 @@ app.use('/api/projects', projectsRouter);
 app.use('/api/purchase-orders', purchaseOrdersRouter);
 app.use('/api/deliveries', deliveriesRouter);
 app.use('/api/inventory', inventoryRouter);
+app.use('/api/equipment', equipmentRouter);
+app.use('/api/equipment-assignments', equipmentAssignmentsRouter);
+app.use('/api/equipment-events', equipmentEventsRouter);
 
 // ---------- API docs ----------
 app.use(

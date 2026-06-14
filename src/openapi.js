@@ -7,7 +7,7 @@ export const openapiSpec = swaggerJsdoc({
       title: 'SubBase Take-Home API',
       version: '1.0.0',
       description:
-        'REST API for the SubBase take-home starter environment. Provides read/write access to the existing SubBase domain: vendors, materials, projects, users, purchase orders, deliveries, and inventory. The rental-equipment domain is intentionally not modelled — that is the candidate\'s deliverable.',
+        "REST API for the SubBase take-home starter environment. Provides read/write access to the existing SubBase domain: vendors, materials, projects, users, purchase orders, deliveries, and inventory. The rental-equipment domain is intentionally not modelled — that is the candidate's deliverable.",
     },
     servers: [{ url: '/', description: 'Same origin' }],
     tags: [
@@ -19,6 +19,9 @@ export const openapiSpec = swaggerJsdoc({
       { name: 'Purchase Orders' },
       { name: 'Deliveries' },
       { name: 'Inventory' },
+      { name: 'Equipment' },
+      { name: 'Equipment Assignments' },
+      { name: 'Equipment Events' },
     ],
     components: {
       schemas: {
@@ -190,6 +193,99 @@ export const openapiSpec = swaggerJsdoc({
             project: { $ref: '#/components/schemas/Project' },
             fromProject: { $ref: '#/components/schemas/Project' },
             user: { $ref: '#/components/schemas/User' },
+          },
+        },
+        Equipment: {
+          type: 'object',
+          description:
+            'Owned or rented machine. currentProjectId/currentProject, isOverdue, daysOverdue, wasteToDate and utilizationPct are DERIVED in src/lib/rentalMath.js, not stored.',
+          properties: {
+            id: { type: 'string' },
+            assetTag: { type: 'string' },
+            name: { type: 'string' },
+            category: {
+              type: 'string',
+              enum: [
+                'SKID_STEER',
+                'LIFT',
+                'COMPACTOR',
+                'GENERATOR',
+                'PUMP',
+                'SAW',
+                'TROWEL',
+                'BREAKER',
+                'EXCAVATOR',
+                'OTHER',
+              ],
+            },
+            ownership: { type: 'string', enum: ['OWNED', 'RENTED'] },
+            status: {
+              type: 'string',
+              enum: ['AVAILABLE', 'IN_USE', 'IDLE', 'DOWN', 'RETURNED'],
+            },
+            dailyRate: { type: 'number' },
+            make: { type: 'string', nullable: true },
+            model: { type: 'string', nullable: true },
+            year: { type: 'integer', nullable: true },
+            vendorId: { type: 'string', nullable: true },
+            purchaseOrderId: { type: 'string', nullable: true },
+            createdAt: { type: 'string', format: 'date-time' },
+            currentProjectId: {
+              type: 'string',
+              nullable: true,
+              description: 'Derived from ACTIVE assignment',
+            },
+            isOverdue: { type: 'boolean', description: 'Derived' },
+            daysOverdue: { type: 'integer', description: 'Derived' },
+            wasteToDate: { type: 'number', description: 'Derived: daysOverdue x dailyRate' },
+            utilizationPct: {
+              type: 'integer',
+              description: 'Derived: deployed days / available days',
+            },
+          },
+        },
+        EquipmentAssignment: {
+          type: 'object',
+          description:
+            'A machine committed to a project for a date range. Canonical rental-date grain.',
+          properties: {
+            id: { type: 'string' },
+            equipmentId: { type: 'string' },
+            projectId: { type: 'string' },
+            startDate: { type: 'string', format: 'date-time' },
+            expectedEndDate: { type: 'string', format: 'date-time' },
+            actualEndDate: { type: 'string', format: 'date-time', nullable: true },
+            status: { type: 'string', enum: ['SCHEDULED', 'ACTIVE', 'RETURNED'] },
+            dailyRate: { type: 'number', description: 'Snapshot at assignment time' },
+            notes: { type: 'string', nullable: true },
+            createdById: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        EquipmentEvent: {
+          type: 'object',
+          description:
+            'Field/lifecycle event. occurredAt = field time; syncedAt = server receipt (offline gap).',
+          properties: {
+            id: { type: 'string' },
+            type: {
+              type: 'string',
+              enum: ['CHECK_OUT', 'CHECK_IN', 'OFF_RENT', 'DOWN', 'TRANSFER'],
+            },
+            condition: {
+              type: 'string',
+              enum: ['GOOD', 'DAMAGED', 'NEEDS_SERVICE'],
+              nullable: true,
+            },
+            photoUrl: { type: 'string', nullable: true },
+            notes: { type: 'string', nullable: true },
+            equipmentId: { type: 'string' },
+            assignmentId: { type: 'string', nullable: true },
+            projectId: { type: 'string', nullable: true },
+            userId: { type: 'string' },
+            occurredAt: { type: 'string', format: 'date-time' },
+            syncedAt: { type: 'string', format: 'date-time', nullable: true },
+            createdAt: { type: 'string', format: 'date-time' },
           },
         },
       },
