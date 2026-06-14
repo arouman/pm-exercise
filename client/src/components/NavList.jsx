@@ -15,6 +15,8 @@ import MaterialsIcon from '@mui/icons-material/CategoryOutlined';
 import VendorsIcon from '@mui/icons-material/StoreOutlined';
 import RentalsIcon from '@mui/icons-material/InsightsOutlined';
 import EquipmentIcon from '@mui/icons-material/PrecisionManufacturingOutlined';
+import ScheduleIcon from '@mui/icons-material/CalendarMonthOutlined';
+import FieldIcon from '@mui/icons-material/PhoneIphoneOutlined';
 
 // Two groups: the existing procurement app, and the new Rentals wedge. Schedule + Field views
 // land in Milestone 4 and get added here then.
@@ -35,6 +37,8 @@ const groups = [
     items: [
       { to: '/rentals', label: 'Rentals', Icon: RentalsIcon },
       { to: '/equipment', label: 'Equipment', Icon: EquipmentIcon },
+      { to: '/schedule', label: 'Schedule', Icon: ScheduleIcon },
+      { to: '/field', label: 'Field', Icon: FieldIcon },
     ],
   },
 ];
