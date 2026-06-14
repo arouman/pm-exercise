@@ -6,8 +6,20 @@ const router = Router();
 
 const VALID_STATUS = ['SCHEDULED', 'ACTIVE', 'RETURNED'];
 
+// How long an existing assignment occupies the machine, as the far edge for overlap:
+//   - returned  -> actualEndDate (it freed up then)
+//   - ACTIVE, not yet returned -> open-ended (null): the machine is physically out and stays
+//     unavailable until it's actually off-rented, even past expectedEndDate (the overdue case).
+//   - SCHEDULED -> expectedEndDate (its planned window).
+// Collapsing a still-out ACTIVE assignment to expectedEndDate would let a new booking slip into
+// the overdue window and double-book a machine that never came back.
+function occupiedUntil(a) {
+  if (a.actualEndDate) return a.actualEndDate;
+  if (a.status === 'ACTIVE') return null; // open-ended -> rangesOverlap treats as far future
+  return a.expectedEndDate;
+}
+
 // Find assignments for a machine that overlap [startDate, endDate] and aren't already returned.
-// Open-ended assignments (no actualEndDate) use expectedEndDate as their far edge.
 async function findConflicts({ equipmentId, startDate, endDate, excludeId }) {
   const existing = await prisma.equipmentAssignment.findMany({
     where: {
@@ -17,9 +29,7 @@ async function findConflicts({ equipmentId, startDate, endDate, excludeId }) {
     },
     include: { project: true },
   });
-  return existing.filter((a) =>
-    rangesOverlap(startDate, endDate, a.startDate, a.actualEndDate ?? a.expectedEndDate),
-  );
+  return existing.filter((a) => rangesOverlap(startDate, endDate, a.startDate, occupiedUntil(a)));
 }
 
 /**

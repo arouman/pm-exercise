@@ -52,6 +52,23 @@ async function processEvent(body) {
     throw err;
   }
 
+  // Guard: a referenced assignment must belong to THIS machine. Without this, a CHECK_IN/OFF_RENT
+  // with a mismatched assignmentId would close a different machine's assignment. Checked before any
+  // write so a bad reference fails cleanly instead of corrupting state.
+  if (assignmentId) {
+    const asg = await prisma.equipmentAssignment.findUnique({ where: { id: assignmentId } });
+    if (!asg) {
+      const err = new Error('Invalid assignmentId');
+      err.status = 400;
+      throw err;
+    }
+    if (asg.equipmentId !== equipmentId) {
+      const err = new Error('assignmentId does not belong to equipmentId');
+      err.status = 400;
+      throw err;
+    }
+  }
+
   const occurred = occurredAt ? new Date(occurredAt) : new Date();
 
   const event = await prisma.equipmentEvent.create({
