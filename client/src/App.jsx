@@ -8,6 +8,8 @@ import ProjectsPage from './pages/ProjectsPage';
 import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
 import DeliveriesPage from './pages/DeliveriesPage';
 import InventoryPage from './pages/InventoryPage';
+import RentalsDashboardPage from './pages/RentalsDashboardPage';
+import EquipmentPage from './pages/EquipmentPage';
 
 export default function App() {
   return (
@@ -20,6 +22,8 @@ export default function App() {
         <Route path="/inventory" element={<InventoryPage />} />
         <Route path="/materials" element={<MaterialsPage />} />
         <Route path="/vendors" element={<VendorsPage />} />
+        <Route path="/rentals" element={<RentalsDashboardPage />} />
+        <Route path="/equipment" element={<EquipmentPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

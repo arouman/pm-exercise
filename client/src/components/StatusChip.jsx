@@ -22,9 +22,38 @@ const COLOR_MAP = {
   IN: { color: 'success', label: 'In' },
   OUT: { color: 'warning', label: 'Out' },
   TRANSFER: { color: 'info', label: 'Transfer' },
+  // Equipment status
+  AVAILABLE: { color: 'success', label: 'Available' },
+  IN_USE: { color: 'info', label: 'In Use' },
+  IDLE: { color: 'warning', label: 'Idle' },
+  DOWN: { color: 'error', label: 'Down' },
+  RETURNED: { color: 'default', label: 'Returned' },
+  // Equipment ownership
+  OWNED: { color: 'default', label: 'Owned' },
+  RENTED: { color: 'info', label: 'Rented' },
+  // Assignment status (ACTIVE reuses the Project 'Active' entry above)
+  SCHEDULED: { color: 'info', label: 'Scheduled' },
+  // Derived alert state
+  OVERDUE: { color: 'error', label: 'Overdue' },
+  // Event types
+  CHECK_OUT: { color: 'info', label: 'Check-out' },
+  CHECK_IN: { color: 'success', label: 'Check-in' },
+  OFF_RENT: { color: 'default', label: 'Off-rent' },
+  // Event condition
+  GOOD: { color: 'success', label: 'Good' },
+  DAMAGED: { color: 'error', label: 'Damaged' },
+  NEEDS_SERVICE: { color: 'warning', label: 'Needs Service' },
 };
 
 export default function StatusChip({ value, size = 'small' }) {
   const spec = COLOR_MAP[value] || { color: 'default', label: value };
-  return <Chip size={size} color={spec.color} label={spec.label} variant="filled" sx={{ minWidth: 80 }} />;
+  return (
+    <Chip
+      size={size}
+      color={spec.color}
+      label={spec.label}
+      variant="filled"
+      sx={{ minWidth: 80 }}
+    />
+  );
 }
