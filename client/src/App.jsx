@@ -10,6 +10,8 @@ import DeliveriesPage from './pages/DeliveriesPage';
 import InventoryPage from './pages/InventoryPage';
 import RentalsDashboardPage from './pages/RentalsDashboardPage';
 import EquipmentPage from './pages/EquipmentPage';
+import ScheduleBoardPage from './pages/ScheduleBoardPage';
+import FieldCheckPage from './pages/FieldCheckPage';
 
 export default function App() {
   return (
@@ -24,6 +26,8 @@ export default function App() {
         <Route path="/vendors" element={<VendorsPage />} />
         <Route path="/rentals" element={<RentalsDashboardPage />} />
         <Route path="/equipment" element={<EquipmentPage />} />
+        <Route path="/schedule" element={<ScheduleBoardPage />} />
+        <Route path="/field" element={<FieldCheckPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
