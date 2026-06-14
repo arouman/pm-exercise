@@ -69,6 +69,7 @@ export default function FieldCheckPage() {
   const [photoName, setPhotoName] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const fileRef = useRef(null);
+  const syncingRef = useRef(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(null); // { action, assetTag, condition, offline }
@@ -95,6 +96,11 @@ export default function FieldCheckPage() {
   }
 
   async function syncNow() {
+    // Guard against concurrent flushes: auto-sync on reconnect and the manual "Sync" pill can both
+    // fire, and each reads the same localStorage queue. Without this, two in-flight batch POSTs would
+    // send the same events twice (the events API has no idempotency key) → duplicate records.
+    if (syncingRef.current) return;
+    syncingRef.current = true;
     try {
       const { created, errors } = await flushQueue();
       queryClient.invalidateQueries({ queryKey: ['list'] });
@@ -112,6 +118,8 @@ export default function FieldCheckPage() {
       }
     } catch {
       setSnack({ severity: 'error', msg: 'Sync failed. Still queued — try again.' });
+    } finally {
+      syncingRef.current = false;
     }
   }
 
@@ -126,7 +134,8 @@ export default function FieldCheckPage() {
     setSubmitting(true);
     const event = {
       type: action,
-      condition,
+      // CHECK_OUT hides the condition picker, so don't record a condition it never collected.
+      condition: action === 'CHECK_OUT' ? null : condition,
       photoUrl: photoName,
       notes: notes || null,
       equipmentId: machine.id,
