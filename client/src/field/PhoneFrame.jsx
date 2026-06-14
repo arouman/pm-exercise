@@ -18,6 +18,11 @@ export default function PhoneFrame({ online = true, children }) {
         width: 408,
         maxWidth: '100%',
         mx: 'auto',
+        // Hug the screen: in a flex column wrapper the default align-items:stretch would stretch the
+        // dark body taller than the fixed-height screen, leaving an oversized chin. flex-start +
+        // fit-content keep the bezel a uniform 12px around the screen.
+        alignSelf: 'flex-start',
+        height: 'fit-content',
         p: '12px',
         borderRadius: '54px',
         bgcolor: '#0B0B0F',
