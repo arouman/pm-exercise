@@ -118,9 +118,29 @@ the seam, not the strategy.
 
 ## Deferred on purpose (matches the brief's "out of scope")
 
-Telematics/GPS, full maintenance engine, customer-facing rent-out storefront/billing,
-real bidirectional ERP sync, real auth. Building any of these is the "go broad" path the
-brief explicitly recommends against.
+These aren't unfinished work — each is a deliberate "not yet," and the reason matters
+more than the omission. The through-line: **the moat is integration, not features.** Every
+item below is something a competitor already does better, or something whose value only
+shows up *after* the wedge has earned the right to expand. Building any of them now would
+trade a defensible narrow position for the "go broad" fight the brief recommends against.
+
+| Deferred | Why it's the right call to wait |
+|---|---|
+| **Telematics / GPS hardware** | This is EquipmentShare's home turf — they have ~$4.4B of revenue, sensor fleets, and *free* bundling. Competing on hardware data means losing on capital and time. Our edge is the procurement data we already hold; GPS adds cost and a hardware supply chain without strengthening the moat. Revisit in Phase 3 as an *integration* (read their telemetry), never as our own hardware. |
+| **Full maintenance engine** | A real maintenance system (PM schedules, work orders, parts, labor) is its own product. In the wedge, "is this machine down?" is answered by `status = DOWN` + a `DOWN` event — enough to keep utilization honest without building ahead of demand. We don't yet know if customers want us to own maintenance or just reflect it; Phase 2 decides that with real usage, not a guess. |
+| **Customer-facing rent-out storefront / billing** | This inverts the business — turning SubBase into a marketplace/rental house. It's a different buyer, different GTM, and competes with our own customers' vendors. Phase 3 at the earliest, and only if Phase 2 economics hold. Building it now would blur the "equipment ledger next to your material ledger" positioning into "we're a rental platform," which is exactly the fight we said we'd avoid. |
+| **Real bidirectional ERP sync** | The brief's core requirement is *one-way/batch* utilization → billing data into the ERP, because that's the integration customers actually need and the one we can ship reliably. Bidirectional sync multiplies failure modes (conflict resolution, write-back errors into someone's accounting system) for marginal value at this stage. We shape the export now and prove the data is clean; full sync is a Phase 2 hardening task once the data is trusted. |
+| **Real auth / per-user identity** | Out of scope for the *starter* by design, but also strategically deferred: the pricing model says **never charge per field user**, so heavyweight per-seat identity is the wrong thing to optimize early. A user-switcher proves the workflow; real SSO/role enforcement is back-office plumbing that adds nothing to the adoption question Phase 0/1 is built to answer. |
+
+Two sequencing principles tie these together:
+- **Adoption is the only risk that matters first.** The brief's #1 kill switch is "the field
+  won't use check-in/out." Everything deferred above is back-office or capital-heavy polish
+  that can't save a product with no field data underneath it — so none of it earns a place
+  ahead of the field flow.
+- **Defer anything that isn't reversible-cheap.** The whole wedge thesis is "cheap,
+  reversible, reuses existing plumbing." Telematics hardware, a rent-out marketplace, and
+  bidirectional ERP writes are each expensive and sticky to unwind — the opposite of a
+  wedge. They wait until the data proves they'll pay off.
 
 ## Known limitations (tracked)
 
