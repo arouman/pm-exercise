@@ -6,6 +6,14 @@ const router = Router();
 
 const VALID_OWNERSHIP = ['OWNED', 'RENTED'];
 const VALID_STATUS = ['AVAILABLE', 'IN_USE', 'IDLE', 'DOWN', 'RETURNED'];
+const VALID_CONDITION = ['NEW', 'USED', 'REFURBISHED'];
+
+// Reject non-integer numerics before they reach Prisma (Number('abc') → NaN → 500). Returns an
+// error string when invalid, or null when the value is absent (optional) or a valid integer.
+function badInteger(value, field) {
+  if (value == null) return null;
+  return Number.isInteger(Number(value)) ? null : `${field} must be an integer`;
+}
 const VALID_CATEGORY = [
   'SKID_STEER',
   'LIFT',
@@ -230,6 +238,10 @@ router.post('/', async (req, res, next) => {
       year,
       vendorId,
       purchaseOrderId,
+      hoursUsed,
+      acquisitionCondition,
+      acquisitionCost,
+      usefulLifeHours,
     } = req.body;
     if (!assetTag || !name || !category || !ownership || !status || dailyRate == null) {
       return res.status(400).json({
@@ -250,6 +262,19 @@ router.post('/', async (req, res, next) => {
     if (!VALID_STATUS.includes(status)) {
       return res.status(400).json({ error: `status must be one of ${VALID_STATUS.join(', ')}` });
     }
+    if (acquisitionCondition != null && !VALID_CONDITION.includes(acquisitionCondition)) {
+      return res
+        .status(400)
+        .json({ error: `acquisitionCondition must be one of ${VALID_CONDITION.join(', ')}` });
+    }
+    const intError =
+      badInteger(year, 'year') ||
+      badInteger(hoursUsed, 'hoursUsed') ||
+      badInteger(usefulLifeHours, 'usefulLifeHours');
+    if (intError) return res.status(400).json({ error: intError });
+    if (acquisitionCost != null && !Number.isFinite(Number(acquisitionCost))) {
+      return res.status(400).json({ error: 'acquisitionCost must be a number' });
+    }
     const machine = await prisma.equipment.create({
       data: {
         assetTag,
@@ -263,6 +288,10 @@ router.post('/', async (req, res, next) => {
         year: year == null ? null : Number(year),
         vendorId: vendorId ?? null,
         purchaseOrderId: purchaseOrderId ?? null,
+        hoursUsed: hoursUsed == null ? null : Number(hoursUsed),
+        acquisitionCondition: acquisitionCondition ?? null,
+        acquisitionCost: acquisitionCost == null ? null : Number(acquisitionCost),
+        usefulLifeHours: usefulLifeHours == null ? null : Number(usefulLifeHours),
       },
     });
     res.status(201).json(machine);
@@ -275,9 +304,33 @@ router.post('/', async (req, res, next) => {
 
 router.patch('/:id', async (req, res, next) => {
   try {
-    const { name, status, dailyRate, make, model, year } = req.body;
+    const {
+      name,
+      status,
+      dailyRate,
+      make,
+      model,
+      year,
+      hoursUsed,
+      acquisitionCondition,
+      acquisitionCost,
+      usefulLifeHours,
+    } = req.body;
     if (status && !VALID_STATUS.includes(status)) {
       return res.status(400).json({ error: `status must be one of ${VALID_STATUS.join(', ')}` });
+    }
+    if (acquisitionCondition != null && !VALID_CONDITION.includes(acquisitionCondition)) {
+      return res
+        .status(400)
+        .json({ error: `acquisitionCondition must be one of ${VALID_CONDITION.join(', ')}` });
+    }
+    const intError =
+      badInteger(year, 'year') ||
+      badInteger(hoursUsed, 'hoursUsed') ||
+      badInteger(usefulLifeHours, 'usefulLifeHours');
+    if (intError) return res.status(400).json({ error: intError });
+    if (acquisitionCost != null && !Number.isFinite(Number(acquisitionCost))) {
+      return res.status(400).json({ error: 'acquisitionCost must be a number' });
     }
     const machine = await prisma.equipment.update({
       where: { id: req.params.id },
@@ -288,6 +341,10 @@ router.patch('/:id', async (req, res, next) => {
         make,
         model,
         year: year == null ? undefined : Number(year),
+        hoursUsed: hoursUsed == null ? undefined : Number(hoursUsed),
+        acquisitionCondition: acquisitionCondition ?? undefined,
+        acquisitionCost: acquisitionCost == null ? undefined : Number(acquisitionCost),
+        usefulLifeHours: usefulLifeHours == null ? undefined : Number(usefulLifeHours),
       },
     });
     res.json(machine);

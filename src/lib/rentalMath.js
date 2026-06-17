@@ -58,6 +58,29 @@ export function utilizationPct(equipment, today = new Date()) {
   return Math.min(100, Math.round((usedDays / windowDays) * 100));
 }
 
+// Assumed resale floor as a fraction of acquisition cost — the part of the asset that is NOT
+// depreciated away (units-of-production depreciates `cost - salvage` over the machine's life).
+const SALVAGE_FRACTION = 0.15;
+
+// Units-of-production (hours-based) depreciation for an OWNED machine with a known cost basis.
+// Returns null fields when not computable (rented machine, or missing cost / useful-life), so the
+// API and UI can cleanly skip depreciation for anything we don't depreciate.
+export function depreciation(equipment) {
+  const cost = equipment.acquisitionCost;
+  const life = equipment.usefulLifeHours;
+  if (equipment.ownership !== 'OWNED' || cost == null || !(life > 0)) {
+    return { bookValue: null, accumulatedDepreciation: null, depreciationPct: null };
+  }
+  const depreciableBase = cost * (1 - SALVAGE_FRACTION);
+  const lifeUsedFraction = Math.min(1, (equipment.hoursUsed || 0) / life);
+  const accumulatedDepreciation = +(depreciableBase * lifeUsedFraction).toFixed(2);
+  return {
+    bookValue: +(cost - accumulatedDepreciation).toFixed(2),
+    accumulatedDepreciation,
+    depreciationPct: Math.round(lifeUsedFraction * 100),
+  };
+}
+
 // Two date ranges [aStart,aEnd] and [bStart,bEnd] overlap (inclusive). Open-ended (null) end =
 // treated as far future, so a still-out machine conflicts with anything starting after it.
 export function rangesOverlap(aStart, aEnd, bStart, bEnd) {
@@ -81,5 +104,6 @@ export function withDerived(equipment, today = new Date()) {
     daysOverdue: daysOverdue(equipment, today),
     wasteToDate: wasteToDate(equipment, today),
     utilizationPct: utilizationPct(equipment, today),
+    ...depreciation(equipment),
   };
 }

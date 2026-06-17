@@ -265,6 +265,14 @@ model Equipment {
   model    String?
   year     Int?
 
+  // Depreciation metadata (owned fleet). Rented machines may carry hoursUsed/condition as a meter
+  // reading, but acquisitionCost/usefulLifeHours are null for them — you depreciate owned assets,
+  // not rentals. bookValue/depreciationPct are DERIVED in src/lib/rentalMath.js, never stored.
+  hoursUsed            Int? // meter / engine hours
+  acquisitionCondition String? // NEW | USED | REFURBISHED (condition at acquisition)
+  acquisitionCost      Float? // purchase price; required to compute depreciation
+  usefulLifeHours      Int? // expected total service hours (depreciation denominator)
+
   // Set for RENTED machines: which vendor and which rent-in PO they came in on.
   vendorId String?
   vendor   Vendor? @relation(fields: [vendorId], references: [id])

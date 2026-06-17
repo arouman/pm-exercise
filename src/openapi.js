@@ -229,6 +229,23 @@ export const openapiSpec = swaggerJsdoc({
             year: { type: 'integer', nullable: true },
             vendorId: { type: 'string', nullable: true },
             purchaseOrderId: { type: 'string', nullable: true },
+            hoursUsed: { type: 'integer', nullable: true, description: 'Meter / engine hours' },
+            acquisitionCondition: {
+              type: 'string',
+              nullable: true,
+              enum: ['NEW', 'USED', 'REFURBISHED'],
+              description: 'Condition at acquisition',
+            },
+            acquisitionCost: {
+              type: 'number',
+              nullable: true,
+              description: 'Purchase price (owned fleet)',
+            },
+            usefulLifeHours: {
+              type: 'integer',
+              nullable: true,
+              description: 'Expected total service hours',
+            },
             createdAt: { type: 'string', format: 'date-time' },
             currentProjectId: {
               type: 'string',
@@ -241,6 +258,21 @@ export const openapiSpec = swaggerJsdoc({
             utilizationPct: {
               type: 'integer',
               description: 'Derived: deployed days / available days',
+            },
+            bookValue: {
+              type: 'number',
+              nullable: true,
+              description: 'Derived: acquisitionCost − accumulated depreciation (owned only)',
+            },
+            accumulatedDepreciation: {
+              type: 'number',
+              nullable: true,
+              description: 'Derived: depreciable base × hours-used fraction (owned only)',
+            },
+            depreciationPct: {
+              type: 'integer',
+              nullable: true,
+              description: 'Derived: % of useful life consumed by hours (owned only)',
             },
           },
         },

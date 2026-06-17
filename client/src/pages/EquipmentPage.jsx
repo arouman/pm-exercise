@@ -22,8 +22,12 @@ const STATUS_OPTS = ['ALL', 'AVAILABLE', 'IN_USE', 'IDLE', 'DOWN', 'RETURNED'];
 
 const mono = { fontFamily: 'ui-monospace, monospace' };
 
-// Small inline utilization bar reused in the grid + drawer.
-function UtilBar({ pct }) {
+// Small inline progress bar reused in the grid + drawer. `invert` flips the color ramp for metrics
+// where HIGH is bad (depreciation / life consumed) vs. utilization where high is good.
+function UtilBar({ pct, invert = false }) {
+  const high = invert ? 'error' : 'success';
+  const low = invert ? 'success' : 'error';
+  const color = pct >= 60 ? high : pct >= 30 ? 'warning' : low;
   return (
     <Box sx={{ width: '100%' }}>
       <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.25 }}>
@@ -34,7 +38,7 @@ function UtilBar({ pct }) {
       <LinearProgress
         variant="determinate"
         value={pct}
-        color={pct >= 60 ? 'success' : pct >= 30 ? 'warning' : 'error'}
+        color={color}
         sx={{ height: 6, borderRadius: 1, backgroundColor: 'rgba(15,23,42,0.05)' }}
       />
     </Box>
@@ -276,6 +280,14 @@ function EquipmentDetail({ machine }) {
           value={[machine.make, machine.model].filter(Boolean).join(' ') || '—'}
         />
         <Spec label="Year" value={machine.year || '—'} />
+        <Spec
+          label="Hours"
+          value={machine.hoursUsed != null ? `${machine.hoursUsed.toLocaleString()} h` : '—'}
+        />
+        <Spec
+          label="Condition"
+          value={machine.acquisitionCondition ? titleCase(machine.acquisitionCondition) : '—'}
+        />
         {machine.vendor && <Spec label="Vendor" value={machine.vendor.name} />}
         {machine.purchaseOrder && (
           <Spec label="Rental PO" value={machine.purchaseOrder.poNumber} mono />
@@ -290,6 +302,26 @@ function EquipmentDetail({ machine }) {
           <UtilBar pct={machine.utilizationPct} />
         </Box>
       </Box>
+
+      {machine.bookValue != null && (
+        <Box>
+          <Stack direction="row" justifyContent="space-between" alignItems="baseline">
+            <Typography variant="caption" color="text.secondary">
+              Depreciation (life consumed by hours)
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Book value{' '}
+              <Box component="span" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                {fmtUSD(machine.bookValue)}
+              </Box>{' '}
+              of {fmtUSD(machine.acquisitionCost)}
+            </Typography>
+          </Stack>
+          <Box sx={{ mt: 0.5 }}>
+            <UtilBar pct={machine.depreciationPct} invert />
+          </Box>
+        </Box>
+      )}
 
       <Divider />
 
